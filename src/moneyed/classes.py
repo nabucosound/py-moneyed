@@ -26,6 +26,12 @@ class Currency(object):
     def __repr__(self):
         return self.code
 
+    def __eq__(self, other):
+        # We treat currencies as 'equal' if they have the same code
+        #
+        return (other and isinstance(other, self.__class__)
+                and self.code == other.code)
+
 
 class MoneyComparisonError(TypeError):
     # This exception was needed often enough to merit its own
