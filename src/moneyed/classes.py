@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
+from __future__ import unicode_literals
 
 import copy
 from json import dumps
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 
 DEFAULT_CURRENCY_CODE = 'BTC'
 
@@ -59,7 +61,7 @@ class CurrencyDoesNotExist(Exception):
 
     def __init__(self, code):
         super(CurrencyDoesNotExist, self).__init__(
-            u"No currency with code %s is defined." % code)
+            "No currency with code %s is defined." % code)
 
 
 class Money(object):
@@ -89,7 +91,8 @@ class Money(object):
         self.__init__(data["a"], data["c"])
 
     def __repr__(self):
-        return u"%s %s" % (self.amount.normalize(), self.currency)
+        return "%s %s" % (self.amount.to_integral_value(ROUND_DOWN),
+                          self.currency)
 
     def __unicode__(self):
         from moneyed.localization import format_money
@@ -115,7 +118,7 @@ class Money(object):
 
     def __neg__(self):
         return Money(
-            amount=-self.amount,
+            amount= -self.amount,
             currency=self.currency)
 
     def __add__(self, other):
@@ -152,7 +155,7 @@ class Money(object):
                 currency=self.currency)
         raise TypeError('Cannot multiply two non-number instances.')
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         if isinstance(other, Money):
             if self.currency == other.currency:
                 return Money(
@@ -176,6 +179,11 @@ class Money(object):
             currency=self.currency
         )
 
+    def __abs__(self):
+        return Money(
+            amount=abs(self.amount),
+            currency=self.currency)
+
     def __rmod__(self, other):
         """
         Calculate percentage of an amount.  The left-hand side of the
@@ -196,7 +204,7 @@ class Money(object):
     __radd__ = __add__
     __rsub__ = __sub__
     __rmul__ = __mul__
-    __rdiv__ = __div__
+    __rtruediv__ = __truediv__
 
     # _______________________________________
     # Override comparison operators
@@ -610,7 +618,7 @@ EEK = add_currency('EEK', '233', 'Kroon', ['ESTONIA'])
 EGP = add_currency('EGP', '818', 'Egyptian Pound', ['EGYPT'])
 ERN = add_currency('ERN', '232', 'Nakfa', ['ERITREA'])
 ETB = add_currency('ETB', '230', 'Ethiopian Birr', ['ETHIOPIA'])
-EUR = add_currency('EUR', '978', 'Euro', ['ANDORRA', 'AUSTRIA', 'BELGIUM', 'FINLAND', 'FRANCE', 'FRENCH GUIANA', 'FRENCH SOUTHERN TERRITORIES', 'GERMANY', 'GREECE', 'GUADELOUPE', 'IRELAND', 'ITALY', 'LUXEMBOURG', 'MARTINIQUE', 'MAYOTTE', 'MONACO', 'MONTENEGRO', 'NETHERLANDS', 'PORTUGAL', 'R.UNION', 'SAINT PIERRE AND MIQUELON', 'SAN MARINO', 'SLOVENIA', 'SPAIN'])
+EUR = add_currency('EUR', '978', 'Euro', ['ANDORRA', 'AUSTRIA', 'BELGIUM', 'FINLAND', 'FRANCE', 'FRENCH GUIANA', 'FRENCH SOUTHERN TERRITORIES', 'GERMANY', 'GREECE', 'GUADELOUPE', 'IRELAND', 'ITALY', 'LUXEMBOURG', 'MARTINIQUE', 'MAYOTTE', 'MONACO', 'MONTENEGRO', 'NETHERLANDS', 'PORTUGAL', 'R.UNION', 'SAINT PIERRE AND MIQUELON', 'SAN MARINO', 'SLOVAKIA', 'SLOVENIA', 'SPAIN'])
 FJD = add_currency('FJD', '242', 'Fiji Dollar', ['FIJI'])
 FKP = add_currency('FKP', '238', 'Falkland Islands Pound', ['FALKLAND ISLANDS (MALVINAS)'])
 GBP = add_currency('GBP', '826', 'Pound Sterling', ['UNITED KINGDOM'])
@@ -694,7 +702,6 @@ SDG = add_currency('SDG', '938', 'Sudanese Pound', ['SUDAN'])
 SEK = add_currency('SEK', '752', 'Swedish Krona', ['SWEDEN'])
 SGD = add_currency('SGD', '702', 'Singapore Dollar', ['SINGAPORE'])
 SHP = add_currency('SHP', '654', 'Saint Helena Pound', ['SAINT HELENA'])
-SKK = add_currency('SKK', '703', 'Slovak Koruna', ['SLOVAKIA'])
 SLL = add_currency('SLL', '694', 'Leone', ['SIERRA LEONE'])
 SOS = add_currency('SOS', '706', 'Somali Shilling', ['SOMALIA'])
 SRD = add_currency('SRD', '968', 'Surinam Dollar', ['SURINAME'])

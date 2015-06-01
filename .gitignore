@@ -1,4 +1,6 @@
 *.py[co]
+*.swp
+.DS_Store
 .installed.cfg
 bin/
 develop-eggs
@@ -14,3 +16,4 @@ build/
 .project
 .pydevproject
 .settings
+.python-version
