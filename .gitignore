@@ -17,3 +17,4 @@ build/
 .pydevproject
 .settings
 .python-version
+.idea

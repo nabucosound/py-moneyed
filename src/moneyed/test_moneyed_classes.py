@@ -1,15 +1,14 @@
 # -*- encoding: utf-8 -*-
-#file test_moneyed_classes.py
+
 import copy
 
-from __future__ import division
-from __future__ import unicode_literals
+from decimal import Decimal, ROUND_HALF_EVEN
 
-from decimal import Decimal
 import pytest  # Works with less code, more consistency than unittest.
+import moneyed
 
 from moneyed.classes import Currency, Money, MultiMoney, MoneyComparisonError, CURRENCIES, DEFAULT_CURRENCY
-from moneyed.localization import format_money
+from moneyed.localization import format_money, _sign, _format
 
 
 class TestCurrency:
@@ -56,6 +55,10 @@ class TestMoney:
         self.one_million_bucks = Money(amount=self.one_million_decimal,
                                        currency=self.USD)
 
+        self.EUR = CURRENCIES['EUR']
+        self.one_million_euros = Money(amount=self.one_million_decimal,
+                                       currency=self.EUR)
+
     def test_init(self):
         one_million_dollars = Money(amount=self.one_million_decimal,
                                     currency=self.USD)
@@ -97,10 +100,33 @@ class TestMoney:
         one_million_pln = Money('1000000', 'PLN')
         # Two decimal places by default
         assert format_money(one_million_pln, locale='pl_PL') == '1 000 000,00 zł'
-        assert format_money(self.one_million_bucks, locale='pl_PL') == '1 000 000,00 USD'
+
+        # overriden sign/format locale display default sign with locale group parameter
+        assert format_money(self.one_million_bucks, locale='pl_PL') == 'US$1 000 000,00'
+        # non overriden sign/format locale display default money sign with default group parameter
+        assert format_money(self.one_million_bucks, locale='fr_FR') == 'US$1,000,000.00'
+
         # No decimal point without fractional part
-        assert format_money(one_million_pln, locale='pl_PL',
-                            decimal_places=0) == '1 000 000 zł'
+        assert format_money(one_million_pln, locale='pl_PL', decimal_places=0) == '1 000 000 zł'
+
+        # add different sign for money USD in locale pl_PL
+        _sign('pl_PL', moneyed.USD, prefix='$')
+        assert format_money(self.one_million_bucks, locale='pl_PL') == '$1 000 000,00'
+
+        # default locale display correct money sign with default group parameter
+        assert format_money(self.one_million_euros) == '1,000,000.00 €'
+        # non overriden sign/format locale display default money sign with default group parameter
+        assert format_money(self.one_million_euros, locale='fr_FR') == '1,000,000.00 €'
+        # overriden sign/locale locale display default money sign with locale group parameter
+        assert format_money(self.one_million_euros, locale='en_US') == '1,000,000.00 €'
+
+        # add format for fr_FR locale
+        _format("fr_FR", group_size=3, group_separator=" ", decimal_point=",",
+                positive_sign="", trailing_positive_sign="",
+                negative_sign="-", trailing_negative_sign="",
+                rounding_method=ROUND_HALF_EVEN)
+        # overriden format locale display correct sign with locale group parameter
+        assert format_money(self.one_million_euros, locale='fr_FR') == '1 000 000,00 €'
 
     def test_add(self):
         assert (self.one_million_bucks + self.one_million_bucks
@@ -148,8 +174,8 @@ class TestMoney:
         assert self.one_million_bucks != x
 
     def test_equality_to_other_types(self):
-        x = Money(amount=1, currency=self.USD)
-        assert self.one_million_bucks != None
+        # x = Money(amount=1, currency=self.USD)
+        assert self.one_million_bucks is not None
         assert self.one_million_bucks != {}
 
     def test_lt(self):
@@ -169,7 +195,7 @@ class TestMoney:
         abs_money = Money(amount=1, currency=self.USD)
         x = Money(amount=-1, currency=self.USD)
         assert abs(x) == abs_money
-        y = Money(amount=1, currency=self.USD)
+        # y = Money(amount=1, currency=self.USD)
         assert abs(x) == abs_money
 
 
